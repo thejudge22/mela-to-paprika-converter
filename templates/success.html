@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Conversion Complete - Mela to Paprika Converter{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="download-section">
+        <div class="success-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+        </div>
+        
+        <h2>Conversion Complete!</h2>
+        <p>Your Mela recipes have been successfully converted to Paprika format.</p>
+        
+        <div style="background: var(--bg-color); padding: 1.5rem; border-radius: 8px; margin: 2rem 0; text-align: left;">
+            <p style="margin-bottom: 0.5rem;"><strong>Filename:</strong> {{ filename }}</p>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">
+                This file is ready to be imported into Paprika Recipe Manager.
+            </p>
+        </div>
+        
+        <a href="{{ url_for('download', session_id=session_id) }}" class="btn btn-success btn-large">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 0.5rem;">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Download .paprikarecipes File
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <h2>📱 How to import into Paprika</h2>
+    <div style="margin-top: 1.5rem;">
+        <div style="display: flex; align-items: flex-start; margin-bottom: 1.5rem;">
+            <div style="background: var(--primary-color); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 1rem; flex-shrink: 0;">1</div>
+            <div>
+                <h3 style="margin-bottom: 0.5rem;">Download the file</h3>
+                <p style="color: var(--text-muted);">Click the download button above to save the .paprikarecipes file to your computer.</p>
+            </div>
+        </div>
+        
+        <div style="display: flex; align-items: flex-start; margin-bottom: 1.5rem;">
+            <div style="background: var(--primary-color); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 1rem; flex-shrink: 0;">2</div>
+            <div>
+                <h3 style="margin-bottom: 0.5rem;">Transfer to your device</h3>
+                <p style="color: var(--text-muted);">Send the file to your iOS/Android device via email, cloud storage, or AirDrop.</p>
+            </div>
+        </div>
+        
+        <div style="display: flex; align-items: flex-start; margin-bottom: 1.5rem;">
+            <div style="background: var(--primary-color); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 1rem; flex-shrink: 0;">3</div>
+            <div>
+                <h3 style="margin-bottom: 0.5rem;">Open in Paprika</h3>
+                <p style="color: var(--text-muted);">Tap the .paprikarecipes file on your device and select "Open in Paprika" or use Paprika's import feature.</p>
+            </div>
+        </div>
+        
+        <div style="display: flex; align-items: flex-start;">
+            <div style="background: var(--primary-color); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 1rem; flex-shrink: 0;">4</div>
+            <div>
+                <h3 style="margin-bottom: 0.5rem;">Enjoy your recipes!</h3>
+                <p style="color: var(--text-muted);">Your recipes will be imported with all their details, including images.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style="text-align: center; margin-top: 2rem;">
+    <a href="{{ url_for('index') }}" class="btn btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 0.5rem;">
+            <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        Convert More Recipes
+    </a>
+</div>
+{% endblock %}

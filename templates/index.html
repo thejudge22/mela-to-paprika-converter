@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <form id="upload-form" action="{{ url_for('convert') }}" method="POST" enctype="multipart/form-data">
+        <div class="upload-area" id="upload-area">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <p><strong>Drag & drop</strong> your .melarecipe files here<br>or click to browse</p>
+            <p style="font-size: 0.85rem; margin-top: 0.5rem;">Supports single or multiple files</p>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;" id="size-limit">Max total size: <span id="max-size">500</span>MB</p>
+            <input type="file" id="file-input" name="files" accept=".melarecipe" multiple>
+            <button type="button" class="btn btn-primary" onclick="document.getElementById('file-input').click()">Select Files</button>
+        </div>
+
+        <div class="file-list" id="file-list" style="display: none;">
+            <h3>Selected Files</h3>
+            <div id="file-items"></div>
+        </div>
+
+        <div class="spinner" id="spinner"></div>
+        
+        <div id="upload-progress" style="display: none; margin-top: 1rem;">
+            <div style="background: var(--bg-color); border-radius: 8px; padding: 1rem; text-align: center;">
+                <p style="margin-bottom: 0.5rem; color: var(--text-muted);">Uploading and converting...</p>
+                <div style="background: var(--border-color); height: 6px; border-radius: 3px; overflow: hidden;">
+                    <div id="progress-bar" style="background: var(--primary-color); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                </div>
+                <p style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted);" id="progress-text">Processing files...</p>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 1.5rem;">
+            <button type="submit" class="btn btn-primary btn-large" id="convert-btn" disabled>
+                Convert to Paprika Format
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <h2>📖 How it works</h2>
+    <div class="features">
+        <div class="feature">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <h3>1. Upload</h3>
+            <p>Select one or more .melarecipe files from your computer</p>
+        </div>
+        <div class="feature">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <h3>2. Convert</h3>
+            <p>Our tool automatically converts them to Paprika format</p>
+        </div>
+        <div class="feature">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <h3>3. Download</h3>
+            <p>Get your .paprikarecipes file ready to import</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>ℹ️ About</h2>
+    <p>This tool converts recipe files from <a href="https://mela.recipes" target="_blank">Mela Recipe Manager</a> to <a href="https://www.paprikaapp.com" target="_blank">Paprika Recipe Manager</a> format.</p>
+    <p style="margin-top: 1rem; color: var(--text-muted);">
+        <strong>Supported conversions:</strong><br>
+        • Recipe titles and descriptions<br>
+        • Ingredients and instructions<br>
+        • Prep time, cook time, and total time<br>
+        • Categories and notes<br>
+        • Recipe images<br>
+        • Source URLs
+    </p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput = document.getElementById('file-input');
+    const fileList = document.getElementById('file-list');
+    const fileItems = document.getElementById('file-items');
+    const convertBtn = document.getElementById('convert-btn');
+    const uploadForm = document.getElementById('upload-form');
+    const spinner = document.getElementById('spinner');
+
+    let files = [];
+
+    // Drag and drop handlers
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        const droppedFiles = Array.from(e.dataTransfer.files).filter(f => f.name.endsWith('.melarecipe'));
+        if (droppedFiles.length === 0) {
+            alert('Please drop .melarecipe files only');
+            return;
+        }
+        addFiles(droppedFiles);
+    });
+
+    // Click to browse
+    uploadArea.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'BUTTON') {
+            fileInput.click();
+        }
+    });
+
+    // File input change
+    fileInput.addEventListener('change', () => {
+        addFiles(Array.from(fileInput.files));
+    });
+
+    function addFiles(newFiles) {
+        files = [...files, ...newFiles];
+        updateFileList();
+    }
+
+    function removeFile(index) {
+        files.splice(index, 1);
+        updateFileList();
+    }
+
+    function updateFileList() {
+        if (files.length === 0) {
+            fileList.style.display = 'none';
+            convertBtn.disabled = true;
+            return;
+        }
+
+        fileList.style.display = 'block';
+        convertBtn.disabled = false;
+
+        fileItems.innerHTML = files.map((file, index) => `
+            <div class="file-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                <span>${file.name}</span>
+                <span class="remove" onclick="removeFile(${index})">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </span>
+            </div>
+        `).join('');
+    }
+
+    // Calculate total file size
+    function getTotalSize() {
+        return files.reduce((total, file) => total + file.size, 0);
+    }
+    
+    function formatSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    // Update file list with sizes
+    function updateFileList() {
+        if (files.length === 0) {
+            fileList.style.display = 'none';
+            convertBtn.disabled = true;
+            return;
+        }
+
+        fileList.style.display = 'block';
+        convertBtn.disabled = false;
+        
+        const totalSize = getTotalSize();
+
+        fileItems.innerHTML = files.map((file, index) => `
+            <div class="file-item">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                <span title="${file.name}">${file.name}</span>
+                <span style="color: var(--text-muted); font-size: 0.85rem; margin-right: 1rem;">${formatSize(file.size)}</span>
+                <span class="remove" onclick="removeFile(${index})">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </span>
+            </div>
+        `).join('');
+        
+        // Add total size indicator
+        const totalDiv = document.createElement('div');
+        totalDiv.style.cssText = 'text-align: right; margin-top: 0.5rem; color: var(--text-muted); font-size: 0.85rem;';
+        totalDiv.innerHTML = `<strong>Total: ${formatSize(totalSize)}</strong>`;
+        fileItems.appendChild(totalDiv);
+    }
+    
+    // Form submission with progress simulation
+    uploadForm.addEventListener('submit', (e) => {
+        const totalSize = getTotalSize();
+        progressDiv.style.display = 'block';
+        progressBar.style.width = '0%';
+        progressText.textContent = `Processing ${files.length} file(s) (${formatSize(totalSize)})...`;
+        
+        uploadForm.classList.add('converting');
+        convertBtn.disabled = true;
+        convertBtn.textContent = 'Converting...';
+        
+        // Simulate progress for better UX (actual upload happens via form submit)
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress > 90) progress = 90; // Hold at 90% until actual completion
+            progressBar.style.width = progress + '%';
+        }, 200);
+        
+        // Store interval to clear if needed
+        uploadForm.dataset.progressInterval = interval;
+    });
+
+    // Make removeFile available globally
+    window.removeFile = removeFile;
+</script>
+{% endblock %}
